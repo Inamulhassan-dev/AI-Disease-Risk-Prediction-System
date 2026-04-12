@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ai-med-backend
+    env: python
+    plan: free
+    buildCommand: "pip install flask flask-cors joblib numpy scikit-learn pyjwt shap lime"
+    startCommand: "python app/app.py"

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { AppProvider } from "./context/AppContext";
 
 // ✅ CHART.JS REGISTRATION (CRITICAL)
 import {
@@ -9,6 +10,9 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
+  Filler,
   Tooltip,
   Legend
 } from "chart.js";
@@ -17,6 +21,9 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
+  Filler,
   Tooltip,
   Legend
 );
@@ -24,6 +31,8 @@ ChartJS.register(
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <AppProvider>
+      <App />
+    </AppProvider>
   </React.StrictMode>
 );

@@ -12,6 +12,9 @@ yarn-error.log*
 # Environment
 .env
 
+# Runtime data
+app/data/
+
 # Build
 build/
 dist/

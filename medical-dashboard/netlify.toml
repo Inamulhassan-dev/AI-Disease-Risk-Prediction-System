@@ -1,0 +1,9 @@
+[build]
+  base = "."
+  command = "cd medical-dashboard && npm install && npm run build"
+  publish = "medical-dashboard/build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -5,6 +5,10 @@ export default function HelperInput({
   hint,
   min,
   max,
+  value,
+  unit,
+  convert,
+  required,
   onChange
 }) {
   const handleChange = (e) => {
@@ -22,17 +26,28 @@ export default function HelperInput({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col card-input fade-up">
       <label className="text-sm font-medium mb-1">{label}</label>
       <input
+        type="number"
+        step="any"
         name={name}
         placeholder={placeholder}
+        value={value}
         onChange={handleChange}
-        className="border rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary outline-none"
+        className="field-input"
       />
-      <span className={`text-xs mt-1 ${getColor(placeholder)}`}>
-        {hint} (Expected: {min} – {max})
+      <span className={`text-xs mt-1 ${getColor(value)}`}>
+        {hint} ({min} - {max}{unit ? ` ${unit}` : ""})
       </span>
+      {required && (value === "" || value === undefined) ? (
+        <span className="text-xs text-red-500 mt-1">Required field</span>
+      ) : null}
+      {convert && value !== "" && !Number.isNaN(parseFloat(value)) ? (
+        <span className="text-xs text-skin-muted mt-1">
+          {Number(value / convert.factor).toFixed(2)} {convert.alt}
+        </span>
+      ) : null}
     </div>
   );
 }

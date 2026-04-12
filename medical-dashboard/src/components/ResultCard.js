@@ -1,15 +1,22 @@
+import { useState } from "react";
+import { Bar } from "react-chartjs-2";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-import RiskGauge from "./RiskGauge";
+import { useApp } from "../context/AppContext";
 import ClinicalRecommendations from "./ClinicalRecommendations";
 import DiabetesRiskExplanation from "./DiabetesRiskExplanation";
 import HeartRiskExplanation from "./HeartRiskExplanation";
 import KidneyRiskExplanation from "./KidneyRiskExplanation";
+import RiskGauge from "./RiskGauge";
 
-export default function ResultCard({ data, disease }) {
+export default function ResultCard({ data, disease, language }) {
+  const { t, saveReport, user } = useApp();
+  const [doctorNotes, setDoctorNotes] = useState("");
+  const [savedNotice, setSavedNotice] = useState("");
   if (!data) return null;
 
+  const generatedAt = new Date();
   const riskColor =
     data.risk === "Low Risk"
       ? "#22c55e"
@@ -17,7 +24,26 @@ export default function ResultCard({ data, disease }) {
       ? "#f59e0b"
       : "#ef4444";
 
-  /* ================= PDF GENERATION ================= */
+  const chartData = {
+    labels: [t("probability"), "100 - risk"],
+    datasets: [
+      {
+        label: "Risk",
+        data: [Number(data.probability), 100 - Number(data.probability)],
+        backgroundColor: ["#f97316", "#14b8a6"],
+        borderRadius: 8
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, max: 100 }
+    }
+  };
+
   const downloadPDF = async () => {
     const element = document.getElementById("pdf-report");
 
@@ -28,7 +54,6 @@ export default function ResultCard({ data, disease }) {
     });
 
     const imgData = canvas.toDataURL("image/png");
-
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = 210;
     const pageHeight = 297;
@@ -52,57 +77,79 @@ export default function ResultCard({ data, disease }) {
     pdf.save(`${disease}_risk_report.pdf`);
   };
 
-  return (
-    <div className="bg-white rounded-xl shadow p-6 mt-6 relative">
-      {/* ================= SCREEN VIEW ================= */}
+  const handleSave = async () => {
+    if (!user) {
+      alert("Please login to save reports.");
+      return;
+    }
 
-      <h3 className="text-xl font-semibold mb-2 capitalize">
-        {disease} Disease Risk Result
-      </h3>
+    await saveReport({
+      disease,
+      result: data,
+      doctorNotes,
+      language: language || "en"
+    });
+    setSavedNotice(t("reportSaved"));
+  };
+
+  return (
+    <div className="card p-6 mt-6 relative">
+      <h3 className="text-xl font-semibold mb-2 capitalize">{disease} {t("riskResultTitle")}</h3>
 
       <p className="text-lg font-medium">
-        Risk Level:{" "}
-        <span style={{ color: riskColor }} className="font-bold">
-          {data.risk}
-        </span>
+        {t("riskLevel")}: <span style={{ color: riskColor }} className="font-bold">{data.risk}</span>
       </p>
 
-      <p className="mb-4">
-        Probability: <b>{data.probability}%</b>
+      <p className="mb-1">
+        {t("probability")}: <b>{data.probability}%</b>
       </p>
 
-      {/* 🔵 Circular Risk Gauge */}
+      <p className="text-sm text-skin-muted mb-4">
+        {t("createdAt")}: {generatedAt.toLocaleString()}
+      </p>
+
       <RiskGauge value={data.probability} />
 
-      {/* 🔍 Risk Explanation */}
-      {disease === "diabetes" && (
-        <DiabetesRiskExplanation data={data} />
-      )}
+      <div className="bg-skin-soft rounded-xl p-3 md:p-4 mt-3">
+        <Bar data={chartData} options={chartOptions} />
+      </div>
 
-      {disease === "heart" && (
-        <HeartRiskExplanation inputs={data.inputs} />
-      )}
+      {disease === "diabetes" && <DiabetesRiskExplanation data={data} />}
+      {disease === "heart" && <HeartRiskExplanation inputs={data.inputs} />}
+      {disease === "kidney" && <KidneyRiskExplanation inputs={data.inputs} />}
 
-      {disease === "kidney" && (
-        <KidneyRiskExplanation inputs={data.inputs} />
-      )}
+      {data.explainability?.shap_like_top_features?.length ? (
+        <div className="mt-6 p-5 rounded-xl bg-skin-soft fade-up">
+          <h4 className="font-semibold mb-2">{t("explainabilityTitle")}</h4>
+          <ul className="list-disc list-inside text-sm space-y-1 text-skin-body">
+            {data.explainability.shap_like_top_features.map((item) => (
+              <li key={item.feature}>
+                <strong>{item.feature}</strong>: {item.explanation} (impact {item.impact_score})
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-skin-muted mt-2">{data.explainability.lime_like_summary}</p>
+        </div>
+      ) : null}
 
-      {/* 🩺 Clinical Recommendations */}
-      <ClinicalRecommendations
-        disease={disease}
-        risk={data.risk}
-      />
+      <ClinicalRecommendations disease={disease} risk={data.risk} />
 
-      {/* 📄 Download PDF */}
-      <button
-        onClick={downloadPDF}
-        className="mt-6 w-full bg-primary text-white py-3 rounded-xl font-semibold"
-      >
-        Download PDF Report
-      </button>
+      <label className="block mt-4">
+        <span className="field-label">{t("doctorNotes")}</span>
+        <textarea
+          className="field-input min-h-24"
+          value={doctorNotes}
+          placeholder={t("doctorNotesHint")}
+          onChange={(event) => setDoctorNotes(event.target.value)}
+        />
+      </label>
 
-      {/* ================= PDF-ONLY LAYOUT ================= */}
-      {/* Off-screen (NOT display:none) so html2canvas works */}
+      {savedNotice ? <p className="text-sm text-green-500 mt-2">{savedNotice}</p> : null}
+
+      <div className="grid sm:grid-cols-2 gap-3 mt-6">
+        <button onClick={downloadPDF} className="btn-primary">{t("downloadPdf")}</button>
+        <button onClick={handleSave} className="btn-ghost">{t("saveReport")}</button>
+      </div>
 
       <div
         id="pdf-report"
@@ -114,50 +161,32 @@ export default function ResultCard({ data, disease }) {
           top: "0"
         }}
       >
-        <h2 className="text-2xl font-bold mb-2">
-          AI-Based Disease Risk Report
-        </h2>
+        <h2 className="text-2xl font-bold mb-2">{t("pdfTitle")}</h2>
 
-        <p><b>Disease:</b> {disease}</p>
-        <p><b>Risk Level:</b> {data.risk}</p>
-        <p><b>Probability:</b> {data.probability}%</p>
+        <p><b>{t("disease")}:</b> {disease}</p>
+        <p><b>{t("riskLevel")}:</b> {data.risk}</p>
+        <p><b>{t("probability")}:</b> {data.probability}%</p>
+        <p><b>{t("createdAt")}:</b> {generatedAt.toLocaleString()}</p>
 
         <hr className="my-4" />
 
-        <h3 className="font-semibold mb-2">
-          Entered Medical Values
-        </h3>
+        <h3 className="font-semibold mb-2">{t("enteredValues")}</h3>
         <ul className="list-disc list-inside text-sm">
-          {Object.entries(data.inputs || {}).map(([k, v]) => (
-            <li key={k}>
-              {k}: {v}
-            </li>
+          {Object.entries(data.inputs || {}).map(([key, value]) => (
+            <li key={key}>{key}: {value}</li>
           ))}
         </ul>
 
         <hr className="my-4" />
 
-        <h3 className="font-semibold mb-2">Explanation</h3>
-        <p className="text-sm">
-          The predicted risk is influenced by abnormal clinical
-          parameters such as blood glucose, BMI, blood pressure,
-          age, cholesterol levels, or kidney function indicators.
-        </p>
+        <h3 className="font-semibold mb-2">{t("doctorNotes")}</h3>
+        <p className="text-sm">{doctorNotes || "-"}</p>
 
         <hr className="my-4" />
+        <h3 className="font-semibold mb-2">{t("advancedExplainability")}</h3>
+        <p className="text-sm">{data.explainability?.lime_like_summary || t("noDetails")}</p>
 
-        <h3 className="font-semibold mb-2">
-          Recommendations
-        </h3>
-        <p className="text-sm">
-          Based on the predicted risk level, lifestyle modifications,
-          regular monitoring, and consultation with a healthcare
-          professional are advised.
-        </p>
-
-        <p className="mt-6 text-xs text-gray-600">
-          Generated by AI-Based Disease Risk Prediction System
-        </p>
+        <p className="mt-6 text-xs text-gray-600">{t("generatedBy")}</p>
       </div>
     </div>
   );

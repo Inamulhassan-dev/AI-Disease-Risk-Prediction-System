@@ -1,130 +1,162 @@
-AI-Based Disease Risk Prediction System
-📌 Project Overview
+# AI Disease Risk Prediction System
 
-The AI-Based Disease Risk Prediction System is a web-based healthcare decision-support application that predicts the risk of Diabetes, Heart Disease, and Kidney Disease using machine learning models.
+Production-style full-stack health risk platform with multi-disease predictions, explainability, guided forms, user accounts, report history, doctor dashboard, model quality page, and one-click setup/start/stop scripts for Windows.
 
-The system allows users to enter clinical parameters, visualizes risk using modern dashboards, explains why a risk is high or low, provides general lifestyle recommendations, and generates downloadable PDF reports.
+## What This Project Includes
 
-This project demonstrates the practical use of Artificial Intelligence in healthcare, focusing on explainability, usability, and responsible predictions.
+- Multi-disease prediction modules:
+  - Diabetes, Heart, Kidney
+  - Liver, Stroke, Hypertension, Thyroid, PCOS
+- User system:
+  - Signup/login
+  - Save reports to history
+  - Trends view over time
+- Explainability:
+  - SHAP and LIME-based feature explanations (with safe fallback)
+- PDF reports:
+  - Chart + timestamp + doctor notes + multilingual labels
+- Doctor tools:
+  - Patient report view
+  - Patient-vs-cohort comparison
+  - CSV export from doctor dashboard
+- Model quality page:
+  - Accuracy, Precision, Recall, ROC-AUC, Version
+- Security baseline:
+  - JWT auth
+  - API rate limiting
+  - Audit logs
+  - Encrypted report payload storage
+- Deployment assets:
+  - Dockerfile
+  - docker-compose.yml
+  - Render config
+  - Netlify config
+  - GitHub Actions CI workflow
+  - AWS deployment guide
 
-Objectives-
+## Tech Stack
 
-Predict disease risk using trained ML models
-Provide explainable AI results (why the risk is high/low)
-Guide users with input ranges and validation
-Visualize results using modern UI dashboards
-Generate PDF medical-style reports
-Ensure the system is easy to use and educational
+- Frontend: React, React Router, Chart.js, html2canvas, jsPDF
+- Backend: Flask, Flask-CORS
+- ML/Data: scikit-learn, NumPy, pandas, joblib, SHAP, LIME
+- Auth/Security: PyJWT
 
-Diseases Covered
+## Project Structure
 
-Diabetes Prediction
-Glucose, BMI, insulin, age, blood pressure, etc.
+```
+AI-Disease-Risk-Prediction-System/
+├─ app/
+│  ├─ app.py
+│  └─ data/                   # runtime storage (ignored by git)
+├─ dataset/
+├─ medical-dashboard/
+│  ├─ src/
+│  └─ netlify.toml
+├─ model/
+│  ├─ *.pkl
+│  ├─ train_model.py
+│  ├─ train_heart.py
+│  ├─ train_kidney.py
+│  └─ train_additional_models.py
+├─ .github/workflows/ci.yml
+├─ Dockerfile
+├─ docker-compose.yml
+├─ render.yaml
+├─ aws-deploy.md
+├─ 1_SETUP_PROJECT.bat
+├─ 2_START_PROJECT.bat
+├─ 3_STOP_PROJECT.bat
+└─ README.md
+```
 
-Heart Disease Prediction
-Chest pain type, cholesterol, BP, heart rate, blood sugar, etc.
+## One-Click Local Usage (Windows)
 
-Kidney Disease Prediction
-Creatinine, hemoglobin, blood pressure, glucose, albumin, etc.
+### 1) Setup once
 
-Frontend (React + Tailwind)
-        ↓
-   REST API (Flask)
-        ↓
-Machine Learning Models
+Run:
 
+```
+1_SETUP_PROJECT.bat
+```
 
-Technologies Used
+This script automatically:
 
-🔹 Frontend
-React.js
-Tailwind CSS
-React Router DOM
-html2canvas (PDF generation)
-jsPDF (PDF creation)
+- checks Python / Node / npm
+- creates `venv`
+- installs all backend dependencies
+- installs frontend dependencies
+- writes `medical-dashboard/.env` with API base URL
 
-🔹 Backend
-Python
-Flask
-Flask-CORS
+### 2) Start project
 
-🔹 Machine Learning
-scikit-learn
-NumPy
-Pandas
-StandardScaler
+Run:
 
-Logistic Regression / Random Forest
-🔹 Development Tools
-Node.js & npm
-VS Code
-Git & GitHub
+```
+2_START_PROJECT.bat
+```
 
-Required Libraries
-Frontend (npm)
-npm install react react-dom react-router-dom
-npm install tailwindcss postcss autoprefixer
-npm install jspdf html2canvas
+Starts:
 
-Backend (pip)
-pip install flask flask-cors
-pip install numpy pandas scikit-learn
+- Backend: `http://127.0.0.1:5001`
+- Frontend: `http://localhost:3001`
 
+### 3) Stop project
 
-AI Medical/
-│
-├── app/                    # Flask backend
-│   ├── app.py
-│   ├── models/
-│   └── utils/
-│
-├── medical-dashboard/      # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ResultCard.js
-│   │   │   ├── RiskGauge.js
-│   │   │   ├── HelperInput.js
-│   │   │   ├── ClinicalRecommendations.js
-│   │   │   ├── DiabetesRiskExplanation.js
-│   │   │   ├── HeartRiskExplanation.js
-│   │   │   └── KidneyRiskExplanation.js
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── Home.js
-│   │   │   ├── Diabetes.js
-│   │   │   ├── Heart.js
-│   │   │   └── Kidney.js
-│   │   │
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   │
-│   │   ├── App.js
-│   │   ├── index.js
-│   │   └── index.css
-│   │
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   └── package.json
-│
-├── model/                  # ML training scripts
-│
-├── dataset/                # CSV datasets
-│
-├── venv/                   # Python virtual environment
-│
-└── README.md
+Run:
 
-To run backend 
+```
+3_STOP_PROJECT.bat
+```
 
+Stops frontend/backend processes on ports `3001` and `5001`.
+
+## Manual Run (Optional)
+
+### Backend
+
+```powershell
 cd app
-python -m venv venv
-venv\Scripts\activate   # Windows
-pip install -r requirements.txt
-python app.py
+..\venv\Scripts\python -c "import app as m; m.app.run(port=5001, debug=False)"
+```
 
-TO RUN FRONT END
+### Frontend
+
+```powershell
 cd medical-dashboard
-npm install
 npm start
+```
 
+## Requirements (for fresh machine)
 
+- Python 3.10+
+- Node.js 18+
+- npm
+- Internet connection for first install
+
+## API Quick Reference
+
+- `GET /api/health`
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `GET /api/reports`
+- `POST /api/reports`
+- `GET /api/reports/trends`
+- `GET /api/model-quality`
+- `GET /api/doctor/patients` (doctor)
+- `GET /api/doctor/compare` (doctor)
+- `GET /api/doctor/patient-compare` (doctor)
+- `POST /api/{disease}` for each module
+
+## Demo Tip
+
+Each disease form includes:
+
+- `Use Healthy Sample`
+- `Use High Risk Sample`
+
+to auto-fill values instantly during presentations.
+
+## Notes
+
+- Runtime data is saved in `app/data/` and excluded from git.
+- If model page appears empty, ensure backend is running on `5001`.
