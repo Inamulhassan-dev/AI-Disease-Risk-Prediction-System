@@ -19,23 +19,88 @@ if not exist "app\app.py" (
   exit /b 1
 )
 
+set "PYTHON_MISSING=0"
+set "NODE_MISSING=0"
+set "NPM_MISSING=0"
+
 where python >nul 2>nul
-if errorlevel 1 (
-  echo [ERROR] Python is not installed or not in PATH.
-  pause
-  exit /b 1
-)
+if errorlevel 1 set "PYTHON_MISSING=1"
 
 where node >nul 2>nul
-if errorlevel 1 (
-  echo [ERROR] Node.js is not installed or not in PATH.
-  pause
-  exit /b 1
+if errorlevel 1 set "NODE_MISSING=1"
+
+where npm >nul 2>nul
+if errorlevel 1 set "NPM_MISSING=1"
+
+if "%PYTHON_MISSING%"=="1" (
+  echo.
+  echo [INFO] Python not found.
+  set /p INSTALL_PY="Install Python 3.10 now using winget? (Y/N): "
+  if /I "!INSTALL_PY!"=="Y" (
+    where winget >nul 2>nul
+    if errorlevel 1 (
+      echo [ERROR] winget not found. Please install Python manually.
+      echo https://www.python.org/downloads/
+      pause
+      exit /b 1
+    )
+    echo Installing Python 3.10...
+    winget install -e --id Python.Python.3.10 --accept-package-agreements --accept-source-agreements
+    if errorlevel 1 (
+      echo [ERROR] Python installation failed.
+      pause
+      exit /b 1
+    )
+    echo Please close and re-open this file after Python install if needed.
+    where python >nul 2>nul
+    if errorlevel 1 (
+      echo [ERROR] Python still not found in PATH.
+      pause
+      exit /b 1
+    )
+  ) else (
+    echo [ERROR] Python is required.
+    pause
+    exit /b 1
+  )
+)
+
+if "%NODE_MISSING%"=="1" (
+  echo.
+  echo [INFO] Node.js not found.
+  set /p INSTALL_NODE="Install Node.js LTS now using winget? (Y/N): "
+  if /I "!INSTALL_NODE!"=="Y" (
+    where winget >nul 2>nul
+    if errorlevel 1 (
+      echo [ERROR] winget not found. Please install Node.js manually.
+      echo https://nodejs.org/
+      pause
+      exit /b 1
+    )
+    echo Installing Node.js LTS...
+    winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements
+    if errorlevel 1 (
+      echo [ERROR] Node.js installation failed.
+      pause
+      exit /b 1
+    )
+    echo Please close and re-open this file after Node install if needed.
+    where node >nul 2>nul
+    if errorlevel 1 (
+      echo [ERROR] Node.js still not found in PATH.
+      pause
+      exit /b 1
+    )
+  ) else (
+    echo [ERROR] Node.js is required.
+    pause
+    exit /b 1
+  )
 )
 
 where npm >nul 2>nul
 if errorlevel 1 (
-  echo [ERROR] npm is not installed or not in PATH.
+  echo [ERROR] npm is not available yet. Re-open terminal and run setup again.
   pause
   exit /b 1
 )
