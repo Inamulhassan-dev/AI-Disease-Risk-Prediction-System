@@ -172,18 +172,42 @@ Use this when your work is done.
 
 ## Manual Run (Optional)
 
-### Backend
+### Linux / macOS
 
-```powershell
-cd app
-..\venv\Scripts\python -c "import app as m; m.app.run(port=5001, debug=False)"
+```bash
+# 1. Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# 2. Install Python dependencies
+pip install -r requirements.txt
+
+# 3. Start backend
+python app/app.py
+# Backend available at http://127.0.0.1:5001
+
+# 4. In a new terminal – start frontend
+cd medical-dashboard
+echo "REACT_APP_API_BASE_URL=http://127.0.0.1:5001/api" > .env
+npm install
+npm start
+# Frontend available at http://localhost:3000
 ```
 
-### Frontend
+### Windows (PowerShell)
 
 ```powershell
-cd medical-dashboard
-npm start
+python -m venv venv
+venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python app\app.py
+```
+
+### Docker
+
+```bash
+docker build -t ai-disease .
+docker run -p 5001:5001 ai-disease
 ```
 
 ## Requirements (for fresh machine)
@@ -193,10 +217,33 @@ npm start
 - npm
 - Internet connection for first install
 
+All Python dependencies are listed in `requirements.txt` at the repo root.
+
 Recommended:
 
-- Windows 10/11
-- 8GB RAM or more
+- 8 GB RAM or more (SHAP/LIME explainability is memory-intensive)
+
+## Data and Model Artifacts
+
+Pre-trained model files (`.pkl`) are committed in the `model/` directory so the
+app runs immediately after cloning without retraining.
+
+To retrain from the original datasets:
+
+```bash
+# Activate venv and install deps first (see Manual Run above)
+cd model
+python train_model.py         # diabetes model
+python train_heart.py         # heart model
+python train_kidney.py        # kidney model
+python train_additional_models.py  # liver, stroke, hypertension, thyroid, pcos
+```
+
+Datasets are in the `dataset/` directory:
+
+- `dataset/diabetes.csv`
+- `dataset/heart.csv`
+- `dataset/kidney_disease.csv`
 
 ## API Quick Reference
 

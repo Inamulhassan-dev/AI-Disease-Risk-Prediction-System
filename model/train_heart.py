@@ -1,11 +1,15 @@
+import os
+
 import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load dataset
-data = pd.read_csv("../dataset/heart.csv")
+data = pd.read_csv(os.path.join(BASE_DIR, "..", "dataset", "heart.csv"))
 
 # Select ONLY numeric features used in the form
 X = data[
@@ -34,7 +38,7 @@ model = RandomForestClassifier(
 model.fit(X_train, y_train)
 
 # Save model and scaler
-joblib.dump(model, "heart_model.pkl")
-joblib.dump(scaler, "heart_scaler.pkl")
+joblib.dump(model, os.path.join(BASE_DIR, "heart_model.pkl"))
+joblib.dump(scaler, os.path.join(BASE_DIR, "heart_scaler.pkl"))
 
 print("✅ Heart disease model trained using Random Forest")

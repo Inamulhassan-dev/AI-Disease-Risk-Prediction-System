@@ -1,12 +1,13 @@
 FROM python:3.10-slim
 
-WORKDIR /app
+WORKDIR /project
 
-COPY app /app/app
-COPY model /app/model
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir flask flask-cors joblib numpy scikit-learn pyjwt shap lime
+COPY app ./app
+COPY model ./model
 
-EXPOSE 5000
+EXPOSE 5001
 
 CMD ["python", "app/app.py"]

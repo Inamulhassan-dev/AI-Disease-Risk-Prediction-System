@@ -1,11 +1,15 @@
+import os
+
 import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load dataset
-data = pd.read_csv("../dataset/diabetes.csv")
+data = pd.read_csv(os.path.join(BASE_DIR, "..", "dataset", "diabetes.csv"))
 
 # Features and target
 X = data.drop("Outcome", axis=1)
@@ -26,7 +30,7 @@ model = LogisticRegression()
 model.fit(X_train, y_train)
 
 # Save model and scaler
-joblib.dump(model, "diabetes_model.pkl")
-joblib.dump(scaler, "scaler.pkl")
+joblib.dump(model, os.path.join(BASE_DIR, "diabetes_model.pkl"))
+joblib.dump(scaler, os.path.join(BASE_DIR, "scaler.pkl"))
 
 print("✅ Model training completed and saved.")

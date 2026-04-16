@@ -207,60 +207,67 @@ def check_rate_limit():
     return None
 
 
+MODEL_DIR = os.path.join(BASE_DIR, "..", "model")
+
+
+def _model(name):
+    return joblib.load(os.path.join(MODEL_DIR, name))
+
+
 MODEL_CONFIG = {
     "diabetes": {
         "endpoint": "/api/diabetes",
-        "model": joblib.load("../model/diabetes_model.pkl"),
-        "scaler": joblib.load("../model/diabetes_scaler.pkl"),
+        "model": _model("diabetes_model.pkl"),
+        "scaler": _model("diabetes_scaler.pkl"),
         "fields": ["pregnancies", "glucose", "bloodpressure", "skinthickness", "insulin", "bmi", "dpf", "age"],
         "ranges": {"pregnancies": (0, 15), "glucose": (70, 200), "bloodpressure": (60, 120), "skinthickness": (10, 60), "insulin": (15, 300), "bmi": (15, 50), "dpf": (0, 2.5), "age": (18, 90)}
     },
     "heart": {
         "endpoint": "/api/heart",
-        "model": joblib.load("../model/heart_model.pkl"),
-        "scaler": joblib.load("../model/heart_scaler.pkl"),
+        "model": _model("heart_model.pkl"),
+        "scaler": _model("heart_scaler.pkl"),
         "fields": ["age", "sex", "cp", "trestbps", "chol", "thalach", "fbs"],
         "ranges": {"age": (18, 90), "sex": (0, 1), "cp": (0, 3), "trestbps": (80, 160), "chol": (150, 300), "thalach": (50, 300), "fbs": (0, 1)}
     },
     "kidney": {
         "endpoint": "/api/kidney",
-        "model": joblib.load("../model/kidney_model.pkl"),
-        "scaler": joblib.load("../model/kidney_scaler.pkl"),
+        "model": _model("kidney_model.pkl"),
+        "scaler": _model("kidney_scaler.pkl"),
         "fields": ["age", "bp", "sg", "al", "su", "bgr", "sc", "hemo"],
         "ranges": {"age": (18, 90), "bp": (70, 160), "sg": (1.0, 2.0), "al": (0, 10), "su": (0, 10), "bgr": (70, 200), "sc": (0.3, 2.0), "hemo": (10, 25)}
     },
     "liver": {
         "endpoint": "/api/liver",
-        "model": joblib.load("../model/liver_model.pkl"),
-        "scaler": joblib.load("../model/liver_scaler.pkl"),
+        "model": _model("liver_model.pkl"),
+        "scaler": _model("liver_scaler.pkl"),
         "fields": ["age", "bilirubin", "alt", "ast", "albumin", "alkphos"],
         "ranges": {"age": (18, 90), "bilirubin": (0.1, 3.0), "alt": (7, 56), "ast": (10, 40), "albumin": (3.2, 5.5), "alkphos": (44, 147)}
     },
     "stroke": {
         "endpoint": "/api/stroke",
-        "model": joblib.load("../model/stroke_model.pkl"),
-        "scaler": joblib.load("../model/stroke_scaler.pkl"),
+        "model": _model("stroke_model.pkl"),
+        "scaler": _model("stroke_scaler.pkl"),
         "fields": ["age", "avg_glucose", "bmi", "hypertension", "heart_disease", "smoking"],
         "ranges": {"age": (18, 95), "avg_glucose": (60, 250), "bmi": (15, 50), "hypertension": (0, 1), "heart_disease": (0, 1), "smoking": (0, 2)}
     },
     "hypertension": {
         "endpoint": "/api/hypertension",
-        "model": joblib.load("../model/hypertension_model.pkl"),
-        "scaler": joblib.load("../model/hypertension_scaler.pkl"),
+        "model": _model("hypertension_model.pkl"),
+        "scaler": _model("hypertension_scaler.pkl"),
         "fields": ["age", "sys_bp", "dia_bp", "bmi", "sodium", "stress"],
         "ranges": {"age": (18, 90), "sys_bp": (90, 210), "dia_bp": (60, 130), "bmi": (15, 50), "sodium": (120, 160), "stress": (0, 10)}
     },
     "thyroid": {
         "endpoint": "/api/thyroid",
-        "model": joblib.load("../model/thyroid_model.pkl"),
-        "scaler": joblib.load("../model/thyroid_scaler.pkl"),
+        "model": _model("thyroid_model.pkl"),
+        "scaler": _model("thyroid_scaler.pkl"),
         "fields": ["age", "tsh", "t3", "t4", "weight_change", "fatigue"],
         "ranges": {"age": (18, 90), "tsh": (0.2, 15), "t3": (0.5, 4.5), "t4": (3, 17), "weight_change": (-10, 10), "fatigue": (0, 10)}
     },
     "pcos": {
         "endpoint": "/api/pcos",
-        "model": joblib.load("../model/pcos_model.pkl"),
-        "scaler": joblib.load("../model/pcos_scaler.pkl"),
+        "model": _model("pcos_model.pkl"),
+        "scaler": _model("pcos_scaler.pkl"),
         "fields": ["age", "bmi", "cycle_irregular", "insulin", "testosterone", "acne"],
         "ranges": {"age": (15, 45), "bmi": (15, 50), "cycle_irregular": (0, 1), "insulin": (2, 35), "testosterone": (5, 120), "acne": (0, 3)}
     }
@@ -683,4 +690,6 @@ def predict_pcos():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5001))
+    debug = os.environ.get("FLASK_ENV", "production") == "development"
+    app.run(host="0.0.0.0", port=port, debug=debug)
