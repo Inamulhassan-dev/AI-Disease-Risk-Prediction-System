@@ -14,9 +14,37 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install backend deps
-        run: pip install flask flask-cors joblib numpy scikit-learn pyjwt shap lime
-      - name: Backend syntax check
-        run: python -m py_compile app/app.py
+        run: pip install -r requirements.txt
+      - name: Backend smoke test
+        run: |
+          python - <<'EOF'
+          import sys, os, threading, time, urllib.request, urllib.error
+
+          # Start server in background thread
+          os.environ.setdefault("FLASK_ENV", "production")
+          sys.path.insert(0, os.path.join(os.path.dirname(__file__) if "__file__" in dir() else ".", "app"))
+          import app as backend_module
+
+          t = threading.Thread(
+              target=lambda: backend_module.app.run(host="127.0.0.1", port=5001, debug=False, use_reloader=False),
+              daemon=True
+          )
+          t.start()
+
+          # Wait for the server to come up (max 15 s)
+          for _ in range(30):
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:5001/api/health", timeout=2) as resp:
+                      body = resp.read()
+                      assert b"ok" in body, f"Unexpected response: {body}"
+                      print("Health check passed:", body.decode())
+                      sys.exit(0)
+              except urllib.error.URLError:
+                  time.sleep(0.5)
+
+          print("ERROR: server did not start in time", file=sys.stderr)
+          sys.exit(1)
+          EOF
 
   frontend:
     runs-on: ubuntu-latest

@@ -11,9 +11,11 @@ yarn-error.log*
 
 # Environment
 .env
+medical-dashboard/.env
 
 # Runtime data
 app/data/
+.runtime/
 
 # Build
 build/

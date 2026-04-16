@@ -1,11 +1,15 @@
+import os
+
 import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load dataset
-data = pd.read_csv("../dataset/kidney_disease.csv")
+data = pd.read_csv(os.path.join(BASE_DIR, "..", "dataset", "kidney_disease.csv"))
 
 # Map target column
 data["classification"] = data["classification"].map({
@@ -42,8 +46,8 @@ model = RandomForestClassifier(
 model.fit(X_train, y_train)
 
 # Save model & scaler
-joblib.dump(model, "kidney_model.pkl")
-joblib.dump(scaler, "kidney_scaler.pkl")
+joblib.dump(model, os.path.join(BASE_DIR, "kidney_model.pkl"))
+joblib.dump(scaler, os.path.join(BASE_DIR, "kidney_scaler.pkl"))
 
 print("✅ Kidney model trained using Random Forest")
 print("Class distribution:", y.value_counts().to_dict())
